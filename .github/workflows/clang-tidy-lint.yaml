@@ -1,0 +1,20 @@
+name: Clang-Tidy Lint
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+  workflow_dispatch:
+
+jobs:
+  clang-tidy-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4.2.2
+      - name: Setup Bazel
+        uses: bazel-contrib/setup-bazel@0.19.0
+        with:
+          bazelisk-cache: true
+          repository-cache: true
+      - name: Run clang-tidy lint
+        run: |
+          bazel test --config=lint //test:figure_test_lint

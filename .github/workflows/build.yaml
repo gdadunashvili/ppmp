@@ -1,0 +1,21 @@
+name: Build Everything
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4.2.2
+      - name: Setup Bazel
+        uses: bazel-contrib/setup-bazel@0.19.0
+        with:
+          bazelisk-cache: true
+          repository-cache: true
+      - name: Build all targets with GCC toolchain
+        run: bazel build //...
+      - name: Build all targets with llvm toolchain
+        run: bazel build --config=clang //...

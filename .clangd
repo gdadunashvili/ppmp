@@ -1,0 +1,5 @@
+CompilationDatabase:
+  ./
+Diagnostics:
+  ClangTidy:
+    FastCheckFilter: None

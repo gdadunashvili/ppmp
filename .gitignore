@@ -1,0 +1,8 @@
+.cache
+bazel-*
+external
+MODULE.bazel.lock
+compile_commands.json
+docs/html
+coverage_html
+

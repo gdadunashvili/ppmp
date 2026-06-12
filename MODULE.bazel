@@ -1,0 +1,81 @@
+bazel_dep(name = "rules_cc", version = "0.2.17", dev_dependency = True)
+bazel_dep(name = "bazel_skylib", version = "1.9.0", dev_dependency = True)
+bazel_dep(name = "catch2", version = "3.13.0", dev_dependency = True)
+bazel_dep(name = "toolchains_llvm", version = "1.8.0", dev_dependency = True)
+bazel_dep(name = "aspect_rules_lint", version = "2.6.0", dev_dependency = True)
+bazel_dep(name = "buildifier_prebuilt", version = "8.5.1", dev_dependency = True)
+bazel_dep(name = "rules_python", version = "2.0.2")
+bazel_dep(name = "gcc_toolchain", version = "0.9.0", dev_dependency = True)
+
+gcc_toolchains = use_extension("@gcc_toolchain//toolchain:module_extensions.bzl", "gcc_toolchains", dev_dependency = True)
+gcc_toolchains.toolchain(
+    name = "gcc_toolchain_x86_64",
+    extra_cxxflags = [
+        "-fdiagnostics-color=always",  # Adds copt to always use coloring in build output
+        "-Wall",
+        "-Wextra",
+        "-Wswitch-enum",
+        "-Werror",
+        "-Wno-error=deprecated-declarations",
+        "-std=c++23",
+    ],
+    extra_ldflags = [
+        "-lstdc++",
+    ],
+    gcc_version = "15.2.0",
+    target_arch = "x86_64",
+)
+use_repo(gcc_toolchains, "gcc_toolchain_x86_64")
+
+llvm = use_extension(
+    "@toolchains_llvm//toolchain/extensions:llvm.bzl",
+    "llvm",
+    dev_dependency = True,
+)
+llvm.toolchain(
+    compile_flags = {"": [
+        # "-march=native",
+        "-fstack-protector",
+        "-fno-omit-frame-pointer",
+        "-fcolor-diagnostics",
+        "-Wextra",
+        "-Wswitch-enum",
+        "-Werror",
+        "-Wno-error=deprecated-declarations",
+        "-Qunused-arguments",
+    ]},
+    cxx_standard = {"": "c++23"},
+    llvm_version = "22.1.0",
+)
+
+use_repo(llvm, "llvm_toolchain")
+
+bazel_dep(name = "hedron_compile_commands", dev_dependency = True)
+git_override(
+    module_name = "hedron_compile_commands",
+    commit = "4f28899228fb3ad0126897876f147ca15026151e",
+    remote = "https://github.com/hedronvision/bazel-compile-commands-extractor.git",
+)
+
+bazel_dep(name = "rules_perl", version = "1.1.1")
+bazel_dep(name = "download_utils", version = "1.2.2")
+
+http_archive = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+http_archive(
+    name = "lcov",
+    urls = ["https://github.com/linux-test-project/lcov/archive/refs/tags/v1.15.tar.gz"],
+    sha256 = "d88b0718f59815862785ac379aed56974b9edd8037567347ae70081cd4a3542a",
+    strip_prefix = "lcov-1.15",
+    build_file = "//tools/coverage:lcov.BUILD",
+)
+
+download_file = use_repo_rule("@download_utils//download/file:defs.bzl", "download_file")
+
+download_file(
+    name = "clang_format",
+    dev_dependency = True,
+    executable = True,
+    output = "executable",
+    urls = ["https://github.com/muttleyxd/clang-tools-static-binaries/releases/download/master-796e77c/clang-format-20_linux-amd64"],
+)

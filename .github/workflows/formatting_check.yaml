@@ -1,0 +1,28 @@
+name: Formatting Check
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+  merge_group:
+    types: [checks_requested]
+  workflow_dispatch:
+
+jobs:
+  formatting_check:
+      runs-on: ubuntu-latest
+      steps:
+        - name: Checkout repository
+          uses: actions/checkout@v4.2.2
+        - name: Setup Bazel
+          uses: bazel-contrib/setup-bazel@0.19.0
+          with:
+            bazelisk-cache: true
+            repository-cache: true
+        - name: where am i
+          run: ls
+        - name: Run bazel formater
+          run: bazel run //:format
+        - name: Report done
+          run: echo "Done"
+
+

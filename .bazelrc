@@ -1,0 +1,17 @@
+common:clang --extra_toolchains=@llvm_toolchain//:cc-toolchain-x86_64-linux
+common --extra_toolchains=@gcc_toolchain_x86_64//:cc_toolchain
+
+common --features=external_include_paths
+common --registry=https://raw.githubusercontent.com/digiboys/bazel-registry/main
+common --registry=https://bcr.bazel.build
+common --per_file_copt=external/.*cpp.*@-Wno-error=switch-enum
+
+common:lint --extra_toolchains=@llvm_toolchain//:cc-toolchain-x86_64-linux
+common:lint --aspects=//:tools/lint/linters.bzl%clang_tidy_aspect
+common:lint --output_groups=+rules_lint_human,+rules_lint_machine
+
+coverage --instrumentation_filter=//ppmp[/:]|//test[/:]
+coverage --combined_report=lcov
+# -fkeep-inline-functions has no effect in C++; explicit class instantiation is used instead
+
+

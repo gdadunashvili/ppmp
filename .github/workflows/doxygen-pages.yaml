@@ -1,0 +1,57 @@
+name: Doxygen Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4.2.2
+      - name: Install Doxygen
+        run: sudo apt-get update && sudo apt-get install -y doxygen graphviz
+      - name: Setup Bazel
+        uses: bazel-contrib/setup-bazel@0.19.0
+        with:
+          bazelisk-cache: true
+          repository-cache: true
+      - name: Generate coverage data
+        run: bazel coverage //test:figure_test
+      - name: Generate coverage HTML report
+        run: bazel run //:coverage
+      - name: Generate Docs
+        run: doxygen Doxyfile
+      - name: Copy coverage into docs
+        run: cp -r coverage_html docs/html/coverage
+      - name: Upload Pages Artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs/html
+      - name: Print URL
+        if: github.event_name != 'pull_request'
+        run: |
+          REPO_URL="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}"
+          echo "Documentation deployed to: ${REPO_URL}/${{ steps.version.outputs.version }}/"
+
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

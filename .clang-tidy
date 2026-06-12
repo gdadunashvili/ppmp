@@ -1,0 +1,29 @@
+Checks: >
+  -*,
+  clang-analyzer-*,
+  cert-*,
+  cppcoreguidelines-*,
+  -cppcoreguidelines-avoid-magic-numbers,
+  -cppcoreguidelines-non-private-member-variables-in-classes,
+  -cppcoreguidelines-rvalue-reference-param-not-moved,
+  -cppcoreguidelines-c-copy-assignment-signature,
+  bugprone-*,
+  -bugprone-easily-swappable-parameters,
+  google-*,
+  -google-runtime-float,
+  misc-*,
+  -misc-non-private-member-variables-in-classes,
+  performance-*,
+  -performance-avoid-endl,
+  readability-*,
+  -readability-magic-numbers,
+  -readability-math-missing-parentheses,
+  -readability-named-parameter,
+  modernize-*,
+  -modernize-use-trailing-return-type,
+  -readability-identifier-length,
+
+WarningsAsErrors: >
+  *,
+
+HeaderFilterRegex: 'ppmp/.*'

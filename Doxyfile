@@ -1,0 +1,22 @@
+# Doxyfile for PPMP documentation
+
+PROJECT_NAME           = "PPMP"
+PROJECT_NUMBER         = 0.0.1
+PROJECT_BRIEF          = "A lightweight C++ plotting library without external dependencies"
+OUTPUT_DIRECTORY       = docs
+INPUT                  = ppmp/ README.md
+RECURSIVE              = YES
+FILE_PATTERNS          = *.h *.cpp *.md
+GENERATE_HTML          = YES
+GENERATE_LATEX         = NO
+QUIET                  = YES
+WARN_IF_UNDOCUMENTED   = NO
+EXTRACT_ALL            = YES
+EXTRACT_PRIVATE        = YES
+EXTRACT_STATIC         = YES
+CALL_GRAPH             = YES
+CALLER_GRAPH           = YES
+HAVE_DOT               = YES
+DOT_IMAGE_FORMAT       = svg
+INTERACTIVE_SVG        = YES
+HTML_OUTPUT            = html
