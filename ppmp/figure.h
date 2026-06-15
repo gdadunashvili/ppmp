@@ -16,6 +16,7 @@
 #include <ranges>
 
 namespace ppmp {
+using ppmp::literals::operator""_r;
 
 template <typename T>
     requires std::is_floating_point_v<T>
@@ -95,7 +96,6 @@ public:
 
     constexpr static Figure create_proportional(std::size_t scale, KWArgs kwargs) {
 
-        using ppmp::literals::operator""_r;
         auto x_max = kwargs.x_max.value_or(1_r);
         auto x_min = kwargs.x_min.value_or(-1_r);
         auto y_max = kwargs.y_max.value_or(1_r);
@@ -117,7 +117,6 @@ public:
 
     [[nodiscard("Discarding a factory function")]]
     constexpr static Figure create(std::size_t width, std::size_t height, KWArgs kwargs) {
-        using ppmp::literals::operator""_r;
 
         auto figure = Figure(M{
             .canvas           = PPMData::blank(width, height, NAMED_COLORS.white),
@@ -149,8 +148,6 @@ public:
               const Callable<Real> auto& y_transform,
               std::size_t                points,
               const PlotParams&          p = PlotParams{}) {
-
-        using ppmp::literals::operator""_r;
 
         auto s  = linspace(0_r, 1_r, points);
         auto xs = s | std::views::transform([x_transform](Real x) { return x_transform(x); });
@@ -191,7 +188,6 @@ public:
             }
 
             case PlotType::Bar: {
-                using ppmp::literals::operator""_r;
                 auto y0 = scale_value_to_frame_coord(0, m.y_max, m.y_min, m.canvas.height());
                 for (auto [x, y] : std::views::zip(xs_, ys_)) {
                     draw_line_in_canvas_coord(x, y0, x, y, p.brush_width, color);
@@ -291,7 +287,6 @@ private:
     }
 
     void draw_axes() {
-        using ppmp::literals::operator""_r;
         if (m.plot_axes.x) { draw_line(m.x_min, 0_r, m.x_max, 0_r); }
         if (m.plot_axes.y) { draw_line(0_r, m.y_min, 0_r, m.y_max); }
         if (m.plot_box.top) { draw_line(m.x_min, m.y_max, m.x_max, m.y_max); }

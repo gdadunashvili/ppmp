@@ -1,5 +1,5 @@
-#include "ppmp/interfaces.h"
 #include "ppmp/figure.h"
+#include "ppmp/interfaces.h"
 #include "ppmp/rgb_color.h"
 
 #include <catch2/catch_test_macros.hpp>
