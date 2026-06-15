@@ -4,7 +4,9 @@ bazel_dep(name = "catch2", version = "3.13.0", dev_dependency = True)
 bazel_dep(name = "toolchains_llvm", version = "1.8.0", dev_dependency = True)
 bazel_dep(name = "aspect_rules_lint", version = "2.6.0", dev_dependency = True)
 bazel_dep(name = "buildifier_prebuilt", version = "8.5.1", dev_dependency = True)
+
 bazel_dep(name = "rules_python", version = "2.0.2")
+
 bazel_dep(name = "gcc_toolchain", version = "0.9.0", dev_dependency = True)
 
 gcc_toolchains = use_extension("@gcc_toolchain//toolchain:module_extensions.bzl", "gcc_toolchains", dev_dependency = True)
@@ -47,7 +49,6 @@ llvm.toolchain(
     cxx_standard = {"": "c++23"},
     llvm_version = "22.1.0",
 )
-
 use_repo(llvm, "llvm_toolchain")
 
 bazel_dep(name = "hedron_compile_commands", dev_dependency = True)
@@ -64,10 +65,10 @@ http_archive = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "ht
 
 http_archive(
     name = "lcov",
-    urls = ["https://github.com/linux-test-project/lcov/archive/refs/tags/v1.15.tar.gz"],
+    build_file = "//tools/coverage:lcov.BUILD",
     sha256 = "d88b0718f59815862785ac379aed56974b9edd8037567347ae70081cd4a3542a",
     strip_prefix = "lcov-1.15",
-    build_file = "//tools/coverage:lcov.BUILD",
+    urls = ["https://github.com/linux-test-project/lcov/archive/refs/tags/v1.15.tar.gz"],
 )
 
 download_file = use_repo_rule("@download_utils//download/file:defs.bzl", "download_file")

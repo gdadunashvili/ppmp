@@ -1,7 +1,6 @@
 load("@aspect_rules_lint//format:defs.bzl", "format_multirun", "format_test")
 
-exports_files([ ".clang-tidy", ])
-
+exports_files([".clang-tidy"])
 
 format_multirun(
     name = "format",
@@ -22,4 +21,3 @@ alias(
     name = "coverage",
     actual = "//tools/coverage:coverage",
 )
-

@@ -11,7 +11,6 @@ cc_binary(
     ],
 )
 
-
 cc_binary(
     name = "instrumented_demo",
     srcs = ["instrumented_demo.cpp"],

@@ -20,12 +20,12 @@ clang_tidy_test(
 py_test(
     name = "integration_test",
     srcs = ["integration_test.py"],
-    data = [
-        "//demo:demo",
-        "//demo:example_ppm",
-    ],
     args = [
         "$(location //demo:demo)",
         "$(location //demo:example_ppm)",
+    ],
+    data = [
+        "//demo",
+        "//demo:example_ppm",
     ],
 )
