@@ -24,7 +24,11 @@ jobs:
       - name: Setup Bazel
         uses: bazel-contrib/setup-bazel@0.19.0
         with:
+          # Avoid downloading Bazel every time.
           bazelisk-cache: true
+          # Store build cache per workflow.
+          disk-cache: ${{ github.workflow }}
+          # Share repository cache between workflows.
           repository-cache: true
       - name: Generate coverage data
         run: bazel coverage //test:figure_test
