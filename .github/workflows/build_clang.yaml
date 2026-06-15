@@ -15,7 +15,5 @@ jobs:
         with:
           bazelisk-cache: true
           repository-cache: true
-      - name: Build all targets with GCC toolchain
-        run: bazel build //...
       - name: Build all targets with llvm toolchain
         run: bazel build --config=clang //...
