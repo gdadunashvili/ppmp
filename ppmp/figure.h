@@ -119,7 +119,7 @@ public:
     constexpr static Figure create(std::size_t width, std::size_t height, KWArgs kwargs) {
 
         auto figure = Figure(M{
-            .canvas           = PPMData::blank(width, height, NAMED_COLORS.white),
+            .canvas           = PPMCanvas::blank(width, height, NAMED_COLORS.white),
             .background_color = kwargs.color.value_or(NAMED_COLORS.white),
             .x_min            = kwargs.x_min.value_or(-1_r),
             .x_max            = kwargs.x_max.value_or(1_r),
@@ -208,7 +208,7 @@ public:
     void render_canvas(std::string_view filename) {
         std::string filename_{filename};
         std::string extension{};
-        if constexpr (std::is_same_v<CanvasType, PPMData>) {
+        if constexpr (std::is_same_v<CanvasType, PPMCanvas>) {
             extension  = ".ppm";
             filename_ += extension;
             auto file  = FileHandler::open_file(filename_, std::ios::out | std::ios::trunc | std::ios::binary);
@@ -303,6 +303,6 @@ private:
     }
 };
 
-using PPMFigure = ppmp::Figure<ppmp::PPMData>;
+using PPMFigure = ppmp::Figure<ppmp::PPMCanvas>;
 }  // namespace ppmp
 #endif  // SRC_FIGURE_H

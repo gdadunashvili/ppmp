@@ -13,8 +13,7 @@
 
 namespace ppmp {
 
-// gToDo: rename to PPMCanvas
-class PPMData {
+class PPMCanvas {
     struct M {
         std::vector<std::byte> data;
         std::size_t            header_size;
@@ -22,7 +21,7 @@ class PPMData {
         std::size_t            height;
     } m;
 
-    explicit PPMData(M&& m_init) : m{std::move(m_init)} {};
+    explicit PPMCanvas(M&& m_init) : m{std::move(m_init)} {};
 
     constexpr static std::size_t PIXEL_WIDTH = 3;
     ErrorStashT                  ErrorStash{};
@@ -31,7 +30,7 @@ public:
     using Result = std::expected<void, Error>;
 
     [[nodiscard("Discarding a factory function")]]
-    static PPMData blank(std::size_t width, std::size_t height, RGBColor rgb) {
+    static PPMCanvas blank(std::size_t width, std::size_t height, RGBColor rgb) {
         std::stringstream header{};
         header << "P6\n" << width << " " << height << "\n255\n";
 
@@ -49,7 +48,7 @@ public:
             header_bytes.push_back(rgb.B);
         }
 
-        return PPMData(M{.data = header_bytes, .header_size = header_size, .width = width, .height = height});
+        return PPMCanvas(M{.data = header_bytes, .header_size = header_size, .width = width, .height = height});
     }
 
     [[nodiscard("Returned error is being descarded.")]]

@@ -1,4 +1,5 @@
 #include "ppmp/figure.h"
+#include "ppmp/canvas_ppm_backend.h"
 #include "ppmp/interfaces.h"
 #include "ppmp/rgb_color.h"
 
@@ -62,27 +63,27 @@ struct CoverageFunc {
 
 }  // namespace
 
-template void ppmp::Figure<ppmp::PPMData>::plot<CoverageFunc>(const CoverageFunc&,
-                                                              std::size_t,
-                                                              const ppmp::PlotParams&);
+template void ppmp::Figure<ppmp::PPMCanvas>::plot<CoverageFunc>(const CoverageFunc&,
+                                                                std::size_t,
+                                                                const ppmp::PlotParams&);
 
-template void ppmp::Figure<ppmp::PPMData>::plot<CoverageFunc, CoverageFunc>(const CoverageFunc&,
-                                                                            const CoverageFunc&,
-                                                                            std::size_t,
-                                                                            const ppmp::PlotParams&);
+template void ppmp::Figure<ppmp::PPMCanvas>::plot<CoverageFunc, CoverageFunc>(const CoverageFunc&,
+                                                                              const CoverageFunc&,
+                                                                              std::size_t,
+                                                                              const ppmp::PlotParams&);
 
-template void ppmp::Figure<ppmp::PPMData>::plot<std::vector<ppmp::Real>>(const std::vector<ppmp::Real>&,
-                                                                         const ppmp::PlotParams&);
+template void ppmp::Figure<ppmp::PPMCanvas>::plot<std::vector<ppmp::Real>>(const std::vector<ppmp::Real>&,
+                                                                           const ppmp::PlotParams&);
 
-template void ppmp::Figure<ppmp::PPMData>::plot<std::vector<ppmp::Real>, std::vector<ppmp::Real>>(
+template void ppmp::Figure<ppmp::PPMCanvas>::plot<std::vector<ppmp::Real>, std::vector<ppmp::Real>>(
     const std::vector<ppmp::Real>&,
     const std::vector<ppmp::Real>&,
     const ppmp::PlotParams&);
 
-template void ppmp::Figure<ppmp::PPMData>::draw_batch<std::vector<std::size_t>, std::vector<std::size_t>>(
+template void ppmp::Figure<ppmp::PPMCanvas>::draw_batch<std::vector<std::size_t>, std::vector<std::size_t>>(
     const std::vector<std::size_t>&,
     const std::vector<std::size_t>&,
     std::size_t,
     ppmp::RGBColor);
 
-template class ppmp::Figure<ppmp::PPMData>;
+template class ppmp::Figure<ppmp::PPMCanvas>;
