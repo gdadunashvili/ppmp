@@ -1,6 +1,7 @@
 #ifndef PPMP_CANVAS_PPM_BACKEND_H
 #define PPMP_CANVAS_PPM_BACKEND_H
 
+#include "ppmp/data_saver.h"
 #include "ppmp/error.h"
 #include "ppmp/rgb_color.h"
 
@@ -84,10 +85,12 @@ public:
         }
     }
 
-    [[nodiscard]] const auto& get_data() const { return m.data; }
-    [[nodiscard]] auto&       get_mut_data() { return m.data; }
-    [[nodiscard]] std::size_t width() const { return m.width; }
-    [[nodiscard]] std::size_t height() const { return m.height; }
+    [[nodiscard]] const std::vector<std::byte>& get_data() const { return m.data; }
+    [[nodiscard]] std::vector<std::byte>&       get_mut_data() { return m.data; }
+    [[nodiscard]] std::size_t                   width() const { return m.width; }
+    [[nodiscard]] std::size_t                   height() const { return m.height; }
+
+    void save(DataSaver& ds) const { ds.save(*this); };
 };
 
 }  // namespace ppmp
