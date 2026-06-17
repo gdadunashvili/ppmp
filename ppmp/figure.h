@@ -46,6 +46,7 @@ enum struct AxesScaling : std::uint8_t {
     // LogLog,
 };
 
+// gToDo: redesign PlotParams, since omitting fields during initialization is frowned upon by the standard
 struct PlotParams {
     std::size_t             brush_width{3};
     std::optional<RGBColor> brush_color;
@@ -95,6 +96,7 @@ public:
 
     /// \brief Keyword arguments for the figure constructor.
     struct KWArgs {
+        // gToDo: redesign kwargs, since omitting fields during initialization is frowned upon by the standard
         std::optional<RGBColor>                     color;
         std::optional<Real>                         x_min;
         std::optional<Real>                         x_max;
@@ -106,8 +108,10 @@ public:
 
     /// \brief Creates a figure with a proportionally scaled canvas. I.e. if the x-range is twice as large as the
     /// y-range, the canvas will be twice as large. in the x direction.
+    ///
     /// \param scale Factor by which the canvas is scaled in each direction.
     /// \param kwargs Keyword arguments for the figure constructor.
+    ///
     /// If x-range specified by kwargs.x_min=-1 and kwargs.x_max=1 is 2 and the scale is 1000, then the canvas will have
     /// 2000 pixels in the x direction. Same matho works for y-direction.
     constexpr static Figure create_proportional(std::size_t scale, KWArgs kwargs = {}) {

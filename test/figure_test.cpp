@@ -5,6 +5,8 @@
 
 #include <catch2/catch_test_macros.hpp>
 
+#include <vector>
+
 namespace ppmp::test {
 
 namespace {
@@ -24,7 +26,7 @@ TEST_CASE("Default Constructor Tests ", "[figure]") {
         REQUIRE(params.brush_width == 3);
         REQUIRE_FALSE(params.brush_color.has_value());
         REQUIRE(params.plot_type == ppmp::PlotType::Line);
-        REQUIRE(params.axes_type == ppmp::AxesType::Linear);
+        REQUIRE(params.axes_type == ppmp::AxesScaling::Linear);
     }
 
     SECTION("Default Figure is default constructed with expected values") {
@@ -51,6 +53,31 @@ TEST_CASE("Default Constructor Tests ", "[figure]") {
     }
 }
 
+TEST_CASE("Figure Plotting Tests ", "[figure]") {
+
+    constexpr auto scale = 10;
+
+    auto fig = Figure<ppmp::PPMCanvas>::create_proportional(scale, PPMFigure::KWArgs{});
+
+    auto xs = std::vector<ppmp::Real>{0_r, 1_r, 2_r, 3_r};
+    auto ys = std::vector<ppmp::Real>{0_r, 1_r, 2_r, 3_r, 4_r, 5_r};
+
+    PlotParams params{};
+
+    SECTION("Using plot(x,y) with containers of unequal size does not cause an error for Line plots") {
+        params.plot_type = PlotType::Line;
+        fig.plot(xs, ys, params);
+    }
+    SECTION("Using plot(x,y) with containers of unequal size does not cause an error for Bar plots") {
+        params.plot_type = PlotType::Bar;
+        fig.plot(xs, ys, params);
+    }
+    SECTION("Using plot(x,y) with containers of unequal size does not cause an error for Scatter plots") {
+        params.plot_type = PlotType::Scatter;
+        fig.plot(xs, ys, params);
+    }
+}
+
 }  // namespace ppmp::test
 
 // These explicit template instantiations force the compiler to emit code for template functions that are otherwise
@@ -67,10 +94,10 @@ template void ppmp::Figure<ppmp::PPMCanvas>::plot<CoverageFunc>(const CoverageFu
                                                                 std::size_t,
                                                                 const ppmp::PlotParams&);
 
-template void ppmp::Figure<ppmp::PPMCanvas>::plot<CoverageFunc, CoverageFunc>(const CoverageFunc&,
-                                                                              const CoverageFunc&,
-                                                                              std::size_t,
-                                                                              const ppmp::PlotParams&);
+template void ppmp::Figure<ppmp::PPMCanvas>::parametric_plot<CoverageFunc, CoverageFunc>(const CoverageFunc&,
+                                                                                         const CoverageFunc&,
+                                                                                         std::size_t,
+                                                                                         const ppmp::PlotParams&);
 
 template void ppmp::Figure<ppmp::PPMCanvas>::plot<std::vector<ppmp::Real>>(const std::vector<ppmp::Real>&,
                                                                            const ppmp::PlotParams&);
