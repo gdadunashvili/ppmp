@@ -20,4 +20,5 @@ jobs:
           # Share repository cache between workflows.
           repository-cache: true
       - name: Run unit tests
-        run: bazel test //test:figure_test --test_output=all
+        run: bazel test --test_tag_filters=unit --test_output=all //test/...
+
