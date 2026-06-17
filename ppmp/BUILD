@@ -5,6 +5,7 @@ cc_library(
     hdrs = [
         "canvas_api.h",
         "canvas_ppm_backend.h",
+        "data_saver.h",
         "error.h",
         "figure.h",
         "file_handler.h",
