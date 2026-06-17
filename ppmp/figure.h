@@ -3,6 +3,7 @@
 
 #include "ppmp/canvas_api.h"
 #include "ppmp/canvas_ppm_backend.h"
+#include "ppmp/data_saver.h"
 #include "ppmp/file_handler.h"
 #include "ppmp/interfaces.h"
 #include "ppmp/rgb_color.h"
@@ -241,19 +242,7 @@ public:
     }
 
     /// \brief Saves teh canvas to a file which matches the canvas type of the fiugre.
-    void save_canvas(std::string_view filename) {
-        std::string filename_{filename};
-        std::string extension{};
-        if constexpr (std::is_same_v<CanvasType, PPMCanvas>) {
-            extension  = ".ppm";
-            filename_ += extension;
-            auto file  = FileHandler::open_file(filename_, std::ios::out | std::ios::trunc | std::ios::binary);
-            file.write_to_file(m.canvas.get_data());
-        } else {
-            std::cerr << "Can't save the given CanvasType. Terminating";
-            std::terminate();
-        }
-    }
+    void save_canvas(std::string_view filename) { DataSaver::create(filename).save(m.canvas); }
 
 private:
     std::int64_t line(std::int64_t x, std::int64_t xs, std::int64_t xf, std::int64_t ys, std::int64_t yf) {
