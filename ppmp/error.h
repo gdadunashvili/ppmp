@@ -16,6 +16,7 @@ enum class Error : std::size_t { GenericError = 0, OutOfBounds, InvalidDimension
 
 using ErrorContainer = std::array<std::size_t, 4>;
 
+/// \brief ErrorData is a Meyer's singleton that stores the number of times each error occured.
 class ErrorData {
 
     ErrorContainer errors;

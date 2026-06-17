@@ -70,18 +70,19 @@ int main() {
              201,
              PlotParams{.brush_width = 10, .brush_color{}, .plot_type = ppmp::PlotType::Line});
 
-    fig.plot(cos_sx, sin_sx, 101, PlotParams{.brush_width = 40, .brush_color{}, .plot_type = ppmp::PlotType::Line});
+    fig.parametric_plot(
+        cos_sx, sin_sx, 101, PlotParams{.brush_width = 40, .brush_color{}, .plot_type = ppmp::PlotType::Line});
 
     auto plotting_math_time = plotting_math_timer.time_elapsed();
     std::cout << "Time elapsed for setup: " << gdu::Timer::human_readable_time(setup_time) << std::endl;
     std::cout << "Time elapsed for plotting math: " << gdu::Timer::human_readable_time(plotting_math_time) << std::endl;
 
     auto saving_timer = gdu::Timer::start();
-    fig.render_canvas("example");
+    fig.save_canvas("example");
     std::cout << "Time elapsed for rendering: " << gdu::Timer::human_readable_time(saving_timer.time_elapsed())
               << std::endl;
 
-    ppmp::print_error_stack(ppmp::ErrorData::get_errors());
+    print_error_stack(ppmp::ErrorData::get_errors());
     std::cout << "Done." << std::endl;
 
     return 0;

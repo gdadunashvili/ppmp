@@ -8,22 +8,16 @@
 #include "ppmp/figure.h"
 
 int main() {
-    using ppmp::PPMFigure;  // The ploting class
-    using ppmp::Real;       // ppmp internal alias to a flating pint number
+    auto fig = ppmp::PPMFigure::create_proportional(1000);
 
-    constexpr std::size_t pixel_scale = 1000;
-
-    auto fig = PPMFigure::create_proportional(pixel_scale, PPMFigure::KWArgs{});
-
-    auto f = [](Real x) { return x * x; };
-
+    auto f = [](ppmp::Real x) { return x * x; };
     fig.plot(f);
-    fig.render_canvas("tiny_example");
-}
 
+    fig.save_canvas("tiny_example");
+}
 ```
 
-That's it! These 15 lines actually compile and produce a `.ppm` image which can be opened by a normal image viewer.
+That's it! These 10 lines actually compile and produce a `.ppm` image which can be opened by a normal image viewer.
 There are absolutely no external dependencies apart from c++ standard library. This library just writes bites to a file
 in the Portable Pixel Map (ppm) format, which can be opened and displayed by most image viewing software.
 
