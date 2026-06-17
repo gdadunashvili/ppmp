@@ -51,7 +51,8 @@ int main() {
 
     // create a parametric plot with two functions, the parameter s is automatically generated between 0 and 1 with the
     // specied number of points
-    fig.plot(cos_sx, sin_sx, 101, PlotParams{.brush_width = 5, .brush_color{}, .plot_type = ppmp::PlotType::Line});
+    fig.parametric_plot(
+        cos_sx, sin_sx, 101, PlotParams{.brush_width = 5, .brush_color{}, .plot_type = ppmp::PlotType::Line});
 
     constexpr std::size_t points = 110;
 
@@ -68,7 +69,7 @@ int main() {
     // one data array (x coordinates are generated automatically between x_min and x_max)
     fig.plot(xs, PlotParams{.brush_width = 3, .brush_color{NAMED_COLORS.orange}, .plot_type = ppmp::PlotType::Line});
 
-    fig.render_canvas("example");
+    fig.save_canvas("example");
 
     ppmp::print_error_stack(ppmp::ErrorData::get_errors());
 

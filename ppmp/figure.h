@@ -18,6 +18,9 @@
 namespace ppmp {
 using ppmp::literals::operator""_r;
 
+/// \brief Generates a range of numbers linearly spaced between initial and final value (inclusive).
+/// \tparam T Floating point type (e.g. float, double), underlying type of the range.
+/// \param num_points number of points in the range
 template <typename T>
     requires std::is_floating_point_v<T>
 inline auto linspace(T initial, T final, std::size_t num_points) {
@@ -28,29 +31,32 @@ inline auto linspace(T initial, T final, std::size_t num_points) {
            });
 }
 
+/// \brief Type of the plot used during plot configuration.
 enum struct PlotType : std::uint8_t {
     Scatter = 0,
     Line,
     Bar,
 };
 
-enum struct AxesType : std::uint8_t {
+enum struct AxesScaling : std::uint8_t {
     Linear = 0,
-    LogarithmicX,
-    LogarithmicY,
-    LogLog,
+    // gToDo: lacks implementation
+    // LogarithmicX,
+    // LogarithmicY,
+    // LogLog,
 };
 
 struct PlotParams {
     std::size_t             brush_width{3};
     std::optional<RGBColor> brush_color;
     PlotType                plot_type{PlotType::Line};
-    AxesType                axes_type{AxesType::Linear};
+    AxesScaling             axes_type{AxesScaling::Linear};
 };
 template <Canvas CanvasType>
 class Figure {
 
 public:
+    /// \brief Data members of the figure. It is generally not intended for the user to direclty modify the members.
     struct M {
         CanvasType  canvas;
         std::size_t current_color_index{0};
@@ -71,8 +77,11 @@ public:
         } plot_box{};
     } m;
 
+private:
     explicit Figure(M&& m_init) : m{std::move(m_init)} {};
 
+public:
+    /// \brief Default colors through which the line plots cycle, if no color is explicitely specified.
     constexpr static std::array DEFAULT_COLORS{NAMED_COLORS.blue,
                                                NAMED_COLORS.green,
                                                NAMED_COLORS.cyan,
@@ -84,6 +93,7 @@ public:
                                                NAMED_COLORS.brown,
                                                NAMED_COLORS.black};
 
+    /// \brief Keyword arguments for the figure constructor.
     struct KWArgs {
         std::optional<RGBColor>                     color;
         std::optional<Real>                         x_min;
@@ -94,7 +104,13 @@ public:
         std::optional<typename Figure::M::PlotBox>  plot_box;
     };
 
-    constexpr static Figure create_proportional(std::size_t scale, KWArgs kwargs) {
+    /// \brief Creates a figure with a proportionally scaled canvas. I.e. if the x-range is twice as large as the
+    /// y-range, the canvas will be twice as large. in the x direction.
+    /// \param scale Factor by which the canvas is scaled in each direction.
+    /// \param kwargs Keyword arguments for the figure constructor.
+    /// If x-range specified by kwargs.x_min=-1 and kwargs.x_max=1 is 2 and the scale is 1000, then the canvas will have
+    /// 2000 pixels in the x direction. Same matho works for y-direction.
+    constexpr static Figure create_proportional(std::size_t scale, KWArgs kwargs = {}) {
 
         auto x_max = kwargs.x_max.value_or(1_r);
         auto x_min = kwargs.x_min.value_or(-1_r);
@@ -110,13 +126,14 @@ public:
         return Figure::create(width, height, kwargs);
     }
 
+    /// \brief Create a canvas with the specified width and height.
+    ///
+    /// If the aspect ration of the canvas is not the same as the aspect ratio of the viewframe, i.e.
+    /// `width/height != (x_max - x_min) / (y_max - y_min)`, the viewframe will be scaled to fit the canvas.
+    /// Which will cause the figure to be stretched or squished.
+    ///
     [[nodiscard("Discarding a factory function")]]
-    constexpr static Figure create(std::size_t width, std::size_t height) {
-        return Figure::create(width, height, KWArgs{});
-    }
-
-    [[nodiscard("Discarding a factory function")]]
-    constexpr static Figure create(std::size_t width, std::size_t height, KWArgs kwargs) {
+    constexpr static Figure create(std::size_t width, std::size_t height, KWArgs kwargs = {}) {
 
         auto figure = Figure(M{
             .canvas           = PPMCanvas::blank(width, height, NAMED_COLORS.white),
@@ -134,8 +151,12 @@ public:
         return figure;
     }
 
+    /// \brief Generates a range of numbers linearly spaced between x_min and x_max.
     constexpr auto x_points(std::size_t points) { return linspace(m.x_min, m.x_max, points); }
 
+    /// \brief Plots a function y_transform(x) over the range of x points.
+    /// \param y_transform Any c++ callable that takes a Real and returns a Real. Function templates are not supported.
+    /// \param points Number of points in the x-range.
     void plot(const Callable<Real> auto& y_transform, std::size_t points = 100, const PlotParams& p = PlotParams{}) {
         auto xs = x_points(points);
         auto ys = xs | std::views::transform([y_transform](Real x) { return y_transform(x); });
@@ -143,11 +164,16 @@ public:
         plot(xs, ys, p);
     }
 
-    // NOTE: this is a parametric polot. maybe should be renamed
-    void plot(const Callable<Real> auto& x_transform,
-              const Callable<Real> auto& y_transform,
-              std::size_t                points,
-              const PlotParams&          p = PlotParams{}) {
+    /// \brief Plots two functions x_transform(s) and y_transform(y) that vary with a comon parameter s, where s varies
+    /// from 0 to 1 (inclusive).
+    ///
+    /// \param x_transform c++ callable that takes a Real and returns a Real. Function templates are not supported.
+    /// \param y_transform c++ callable that takes a Real and returns a Real. Function templates are not supported.
+    /// \param points number of points for the parameter s
+    void parametric_plot(const Callable<Real> auto& x_transform,
+                         const Callable<Real> auto& y_transform,
+                         std::size_t                points,
+                         const PlotParams&          p = PlotParams{}) {
 
         auto s  = linspace(0_r, 1_r, points);
         auto xs = s | std::views::transform([x_transform](Real x) { return x_transform(x); });
@@ -157,12 +183,17 @@ public:
         plot(xs, ys, p);
     }
 
+    /// \brief Plotsa a range of y values, against an automatically generated range of x values.
+    /// \param ys User provided data. The corresponding x values are automatically generated in range of x_min to x_max,
+    /// and evenlly spaced for each point of ys.
     template <Container YContainer>
     void plot(const YContainer& ys, const PlotParams& p = PlotParams{}) {
         auto xs = x_points(ys.size());
         plot(xs, ys, p);
     }
 
+    /// \brief Plots a range of x values against a range of y values. If the ranges are mismatched, the longer range is
+    /// truncated to the length of the shorter range.
     template <Container XContainer, Container YContainer>
     void plot(const XContainer& xs, const YContainer& ys, const PlotParams& p = PlotParams{}) {
         auto color = [this, &p]() -> RGBColor {
@@ -175,8 +206,8 @@ public:
             return DEFAULT_COLORS[m.current_color_index++];
         }();
 
-        auto xs_ = xs | scale_to_frame_coord(m.x_min, m.x_max, m.canvas.width());
-        auto ys_ = ys | scale_to_frame_coord(m.y_max, m.y_min, m.canvas.height());
+        auto xs_ = xs | scale_to_canvas_coordinates(m.x_min, m.x_max, m.canvas.width());
+        auto ys_ = ys | scale_to_canvas_coordinates(m.y_max, m.y_min, m.canvas.height());
 
         switch (p.plot_type) {
             case PlotType::Line: {
@@ -188,7 +219,7 @@ public:
             }
 
             case PlotType::Bar: {
-                auto y0 = scale_value_to_frame_coord(0, m.y_max, m.y_min, m.canvas.height());
+                auto y0 = scale_value_to_canvas_coordinate(0, m.y_max, m.y_min, m.canvas.height());
                 for (auto [x, y] : std::views::zip(xs_, ys_)) {
                     draw_line_in_canvas_coord(x, y0, x, y, p.brush_width, color);
                 }
@@ -205,7 +236,8 @@ public:
         }
     }
 
-    void render_canvas(std::string_view filename) {
+    /// \brief Saves teh canvas to a file which matches the canvas type of the fiugre.
+    void save_canvas(std::string_view filename) {
         std::string filename_{filename};
         std::string extension{};
         if constexpr (std::is_same_v<CanvasType, PPMCanvas>) {
@@ -224,15 +256,16 @@ private:
         return ((yf - ys) * x + ys * xf - yf * xs) / (xf - xs);
     }
 
-    static std::size_t scale_value_to_frame_coord(Real val, Real min_val, Real max_val, std::size_t width) {
+    static std::size_t scale_value_to_canvas_coordinate(Real val, Real min_val, Real max_val, std::size_t width) {
         const Real scale     = static_cast<Real>(width - 1) / (max_val - min_val);
         auto       scaled_el = static_cast<std::size_t>(scale * (val - min_val));
         return scaled_el;
     }
 
-    constexpr static auto scale_to_frame_coord(Real min_val, Real max_val, std::size_t width) {
-        return std::views::transform(
-            [min_val, max_val, width](Real el) { return scale_value_to_frame_coord(el, min_val, max_val, width); });
+    constexpr static auto scale_to_canvas_coordinates(Real min_val, Real max_val, std::size_t width) {
+        return std::views::transform([min_val, max_val, width](Real el) {
+            return scale_value_to_canvas_coordinate(el, min_val, max_val, width);
+        });
     };
 
     void draw_line(Real        x_start,
@@ -242,17 +275,15 @@ private:
                    std::size_t linewidth = 1,
                    RGBColor    color     = NAMED_COLORS.black) {
 
-        // PERF: creating an array and piping it to a view might not be optimal
-        auto xs  = std::array{x_start, x_end};
-        auto ys  = std::array{y_start, y_end};
-        auto xs_ = xs | scale_to_frame_coord(m.x_min, m.x_max, m.canvas.width());
-        auto ys_ = ys | scale_to_frame_coord(m.y_max, m.y_min, m.canvas.height());
+        auto x_start_scaled = scale_value_to_canvas_coordinate(x_start, m.x_min, m.x_max, m.canvas.width());
+        auto y_start_scaled = scale_value_to_canvas_coordinate(y_start, m.y_max, m.y_min, m.canvas.height());
+        auto x_end_scaled   = scale_value_to_canvas_coordinate(x_end, m.x_min, m.x_max, m.canvas.width());
+        auto y_end_scaled   = scale_value_to_canvas_coordinate(y_end, m.y_max, m.y_min, m.canvas.height());
 
-        // NOTE: we are putting the y coordinates backwards since the canvas data structure is indexed from top to
-        // bottom but the y axes in the plot goes from bottom to top
-
-        // NOLINTNEXTLINE (cppcoreguidelines-pro-bounds-avoid-unchecked-container-access)
-        draw_line_in_canvas_coord(xs_[0], ys_[1], xs_[1], ys_[0], linewidth, color);
+        // We are putting the y coordinates backwards since the canvas data structure is indexed from top to bottom but
+        // the y axes in the plot goes from bottom to top.
+        // NOLINTNEXTLINE (readability-suspicious-call-argument)
+        draw_line_in_canvas_coord(x_start_scaled, y_end_scaled, x_end_scaled, y_start_scaled, linewidth, color);
     }
 
     void draw_line_in_canvas_coord(std::int64_t x_start,

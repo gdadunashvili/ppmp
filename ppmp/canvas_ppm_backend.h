@@ -13,6 +13,7 @@
 
 namespace ppmp {
 
+/// \brief Implementation of the Canvas interface for PPM files.
 class PPMCanvas {
     struct M {
         std::vector<std::byte> data;
@@ -29,8 +30,9 @@ class PPMCanvas {
 public:
     using Result = std::expected<void, Error>;
 
+    /// \brief Create a blank canvas with the specified width and height and the specified background color.
     [[nodiscard("Discarding a factory function")]]
-    static PPMCanvas blank(std::size_t width, std::size_t height, RGBColor rgb) {
+    static PPMCanvas blank(std::size_t width, std::size_t height, RGBColor background_color) {
         std::stringstream header{};
         header << "P6\n" << width << " " << height << "\n255\n";
 
@@ -43,14 +45,20 @@ public:
         }
 
         for (std::size_t i = 0; i < width * height; ++i) {
-            header_bytes.push_back(rgb.R);
-            header_bytes.push_back(rgb.G);
-            header_bytes.push_back(rgb.B);
+            header_bytes.push_back(background_color.R);
+            header_bytes.push_back(background_color.G);
+            header_bytes.push_back(background_color.B);
         }
 
         return PPMCanvas(M{.data = header_bytes, .header_size = header_size, .width = width, .height = height});
     }
 
+    /// \brief Colors a single pixel with a given color.
+    /// \param x x-coordinate of the pixel to color, in canvas coordinates.
+    /// \param y y-coordinate of the pixel to color, in canvas coordinates.
+    /// \return  Error::OutOfBounds if the coordinates are out of bounds. This is a non-fatal error.
+    ///
+    /// Canvas coordinates start at the top left corner and go down and to the right.
     [[nodiscard("Returned error is being descarded.")]]
     Result pixel_shader(std::size_t x, std::size_t y, RGBColor color) {
 
@@ -66,6 +74,7 @@ public:
         return {};
     }
 
+    /// \brief Colors a quadrilateral with a given color. Uses a pixel shader to color each pixel in the quad.
     void quad_shader(std::size_t x, std::size_t y, std::size_t quad_width, std::size_t quad_height, RGBColor color) {
 
         for (std::size_t j = 0; j < quad_height; ++j) {
