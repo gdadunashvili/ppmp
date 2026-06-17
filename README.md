@@ -151,6 +151,8 @@ bazel run //:coverage
    actual points is less than expected 100. It should be arranged that the user specified number of points excludes
    the clipped points.
 
+- Doxygen should be installed with bazel and have a local run target.
+
 
 ### Long-term future
 
