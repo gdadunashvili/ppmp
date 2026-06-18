@@ -32,6 +32,9 @@ Currently, `ppmp` can create:
  - 2D parametric plots
  - Two data arrays against each other.
 
+## API Documentation
+
+The documentation can be found [here](https://gdadunashvili.github.io/ppmp/). It is generated from inline comments using, doxygen.
 
 ## How to get it
 `ppmp` Is a header only library, just copy-paste the contents of the `ppmp` folder into your project and include the
