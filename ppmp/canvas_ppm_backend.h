@@ -5,7 +5,9 @@
 #include "ppmp/error.h"
 #include "ppmp/rgb_color.h"
 
+#include <algorithm>
 #include <cstddef>
+#include <cstring>
 #include <expected>
 #include <iostream>
 #include <sstream>
@@ -38,20 +40,31 @@ public:
         header << "P6\n" << width << " " << height << "\n255\n";
 
         auto                   header_size = header.str().size();
-        std::vector<std::byte> header_bytes{};
-        header_bytes.reserve(header_size + (width * height * PIXEL_WIDTH));
+        std::vector<std::byte> data_bytes{};
 
-        for (const auto& byte : header.str()) {
-            header_bytes.push_back(std::byte{static_cast<unsigned char>(byte)});
+        data_bytes.resize(header_size + (width * height * PIXEL_WIDTH));
+
+        // NOTE: All these memcpys and fill_ns are performance optimizations. Sth more readable like the following looop
+        // is roughly 25% (for arbitrary background_color)  and a bit more for the black background.
+        // for (std::size_t i = 0; i < width * height; ++i) {
+        //     data_bytes.push_back(background_color.R);
+        //     data_bytes.push_back(background_color.G);
+        //     data_bytes.push_back(background_color.B);
+        // }
+
+        // NOLINTNEXTLINE (cppcoreguidelines-pro-type-reinterpret-cast)
+        std::memcpy(data_bytes.data(), reinterpret_cast<std::byte*>(header.str().data()), header_size);
+
+        if (rgb_color_eq(background_color, ppmp::NAMED_COLORS.black)) {
+            // bites are already set to 0 which is black
+        } else {
+            // NOLINTNEXTLINE (cppcoreguidelines-pro-type-reinterpret-cast)
+            auto color_ptr_to_data_bytes = reinterpret_cast<RGBColor*>(data_bytes.data() + header_size);
+            // NOLINTNEXTLINE (cppcoreguidelines-pro-bounds-pointer-arithmetic)
+            std::fill_n(color_ptr_to_data_bytes, width * height, background_color);
         }
 
-        for (std::size_t i = 0; i < width * height; ++i) {
-            header_bytes.push_back(background_color.R);
-            header_bytes.push_back(background_color.G);
-            header_bytes.push_back(background_color.B);
-        }
-
-        return PPMCanvas(M{.data = header_bytes, .header_size = header_size, .width = width, .height = height});
+        return PPMCanvas(M{.data = data_bytes, .header_size = header_size, .width = width, .height = height});
     }
 
     /// \brief Colors a single pixel with a given color.
