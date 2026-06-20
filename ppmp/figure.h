@@ -140,9 +140,10 @@ public:
     [[nodiscard("Discarding a factory function")]]
     constexpr static Figure create(std::size_t width, std::size_t height, KWArgs kwargs = {}) {
 
+        auto color  = kwargs.color.value_or(NAMED_COLORS.white);
         auto figure = Figure(M{
-            .canvas           = PPMCanvas::blank(width, height, NAMED_COLORS.white),
-            .background_color = kwargs.color.value_or(NAMED_COLORS.white),
+            .canvas           = PPMCanvas::blank(width, height, color),
+            .background_color = color,
             .x_min            = kwargs.x_min.value_or(-1_r),
             .x_max            = kwargs.x_max.value_or(1_r),
             .y_min            = kwargs.y_min.value_or(-1_r),
