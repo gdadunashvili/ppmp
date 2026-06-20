@@ -9,14 +9,6 @@
 
 namespace ppmp::test {
 
-namespace {
-
-bool rgb_color_eq(const ppmp::RGBColor& lhs, const ppmp::RGBColor& rhs) {
-    return lhs.R == rhs.R && lhs.G == rhs.G && lhs.B == rhs.B;
-}
-
-}  // namespace
-
 TEST_CASE("Default Constructor Tests ", "[figure]") {
     using ppmp::literals::operator""_r;
 

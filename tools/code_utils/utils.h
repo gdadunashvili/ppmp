@@ -39,19 +39,22 @@ public:
 
         std::stringstream info{"elapsed time: "};
         if (duration < nanoseconds{1000}) {
-            info << duration_cast<nanoseconds>(duration);
+            ;
+            info << std::chrono::round<nanoseconds>(duration);
         } else if (duration < microseconds{1000}) {
-            info << duration_cast<microseconds>(duration) << "us (" << duration_cast<nanoseconds>(duration) << "ns)";
+            info << std::chrono::round<microseconds>(duration) << " (" << std::chrono::round<nanoseconds>(duration)
+                 << ")";
         } else if (duration < milliseconds{1000}) {
-            info << duration_cast<milliseconds>(duration) << " (" << duration_cast<microseconds>(duration) << ")";
+            info << std::chrono::round<milliseconds>(duration) << " (" << std::chrono::round<microseconds>(duration)
+                 << ")";
         } else if (duration < seconds{60}) {
-            info << duration_cast<seconds>(duration) << " (" << duration_cast<milliseconds>(duration) << ")";
+            info << std::chrono::round<seconds>(duration) << " (" << std::chrono::round<milliseconds>(duration) << ")";
         } else if (duration < minutes{60}) {
-            info << duration_cast<minutes>(duration) << " (" << duration_cast<seconds>(duration) << ")";
+            info << std::chrono::round<minutes>(duration) << " (" << std::chrono::round<seconds>(duration) << ")";
         } else if (duration < hours{24}) {
-            info << duration_cast<hours>(duration) << " (" << duration_cast<minutes>(duration) << ")";
+            info << std::chrono::round<hours>(duration) << " (" << std::chrono::round<minutes>(duration) << ")";
         } else {
-            info << duration_cast<days>(duration) << " (" << duration_cast<hours>(duration) << ")";
+            info << std::chrono::round<days>(duration) << " (" << std::chrono::round<hours>(duration) << ")";
         }
         return info.str();
     }
