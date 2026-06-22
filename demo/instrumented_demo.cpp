@@ -1,10 +1,11 @@
-#include "ppmp/error.h"
 #include "ppmp/figure.h"
 #include "ppmp/rgb_color.h"
 
 #include "tools/code_utils/utils.h"
 
 #include <cstddef>
+#include <cstdint>
+#include <cstdlib>
 #include <numbers>
 
 namespace {
@@ -17,7 +18,6 @@ using ppmp::Real;
 // functions
 using ppmp::literals::operator""_r;
 using ppmp::linspace;
-using ppmp::print_error_stack;
 
 // constants
 using ppmp::NAMED_COLORS;
@@ -82,7 +82,6 @@ int main() {
     std::cout << "Time elapsed for rendering: " << gdu::Timer::human_readable_time(saving_timer.time_elapsed())
               << std::endl;
 
-    print_error_stack(ppmp::ErrorData::get_errors());
     std::cout << "Done." << std::endl;
 
     return 0;
