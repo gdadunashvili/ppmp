@@ -103,6 +103,7 @@ public:
         std::optional<Real>                         x_max;
         std::optional<Real>                         y_min;
         std::optional<Real>                         y_max;
+        std::optional<std::size_t>                  axes_width;
         std::optional<typename Figure::M::PlotAxes> plot_axes;
         std::optional<typename Figure::M::PlotBox>  plot_box;
     };
@@ -152,7 +153,8 @@ public:
             .plot_box = kwargs.plot_box.value_or({.top = false, .bottom = false, .left = false, .right = false}),
         });
 
-        figure.draw_axes();
+        auto axes_width = kwargs.axes_width.value_or(11);
+        figure.draw_axes(axes_width);
 
         return figure;
     }
@@ -217,8 +219,9 @@ public:
 
         switch (p.plot_type) {
             case PlotType::Line: {
-                for (const auto& [x, y, x_next, y_next] :
-                     std::views::zip(xs_, ys_, xs_ | std::views::drop(1), ys_ | std::views::drop(1))) {
+                auto full_batch = std::views::zip(xs_, ys_, xs_ | std::views::drop(1), ys_ | std::views::drop(1));
+
+                for (const auto& [x, y, x_next, y_next] : full_batch) {
                     draw_line_in_canvas_coord(x, y, x_next, y_next, p.brush_width, color);
                 }
                 break;
@@ -246,6 +249,7 @@ public:
     void save_canvas(std::string_view filename) { DataSaver::create(filename).save(m.canvas); }
 
 private:
+    // PERF: consider floating point maths for this
     std::int64_t line(std::int64_t x, std::int64_t xs, std::int64_t xf, std::int64_t ys, std::int64_t yf) {
         return ((yf - ys) * x + ys * xf - yf * xs) / (xf - xs);
     }
@@ -274,9 +278,8 @@ private:
         auto x_end_scaled   = scale_value_to_canvas_coordinate(x_end, m.x_min, m.x_max, m.canvas.width());
         auto y_end_scaled   = scale_value_to_canvas_coordinate(y_end, m.y_max, m.y_min, m.canvas.height());
 
-        // We are putting the y coordinates backwards since the canvas data structure is indexed from top to bottom but
-        // the y axes in the plot goes from bottom to top.
-        // NOLINTNEXTLINE (readability-suspicious-call-argument)
+        // We are putting the y coordinates backwards since the canvas data structure is indexed from top to bottom
+        // but the y axes in the plot goes from bottom to top. NOLINTNEXTLINE (readability-suspicious-call-argument)
         draw_line_in_canvas_coord(x_start_scaled, y_end_scaled, x_end_scaled, y_start_scaled, linewidth, color);
     }
 
@@ -287,9 +290,10 @@ private:
                                    std::int64_t linewidth,
                                    RGBColor     color) {
 
-        auto w = static_cast<std::int64_t>(m.canvas.width());
-        auto h = static_cast<std::int64_t>(m.canvas.height());
-        // NOTE: clamping is not necessary for correctness but avoids unnecessary computation outside of visible area
+        const auto w = static_cast<std::int64_t>(m.canvas.width());
+        const auto h = static_cast<std::int64_t>(m.canvas.height());
+        // NOTE: clamping is not necessary for correctness but avoids unnecessary computation outside of visible
+        // area
         const auto xs = std::clamp(std::min(x_start, x_end), -1L, w);
         const auto xf = std::clamp(std::max(x_start, x_end), -1L, w);
         const auto dx = xf - xs;
@@ -298,26 +302,52 @@ private:
         const auto yf = std::clamp(std::max(y_start, y_end), -1L, h);
         const auto dy = yf - ys;
 
+        auto lw_half = linewidth / 2;
+
         if (dx < dy) {
             for (std::int64_t y = ys; y <= yf; ++y) {
                 const auto x = line(y, y_start, y_end, x_start, x_end);
-                m.canvas.quad_shader(x, y, linewidth, linewidth, color);
-            }
-        }
+                // m.canvas.quad_shader(x, y, linewidth, linewidth, color);
 
-        for (std::int64_t x = xs; x < xf; ++x) {
-            const auto y = line(x, x_start, x_end, y_start, y_end);
-            m.canvas.quad_shader(x, y, linewidth, linewidth, color);
+                if (y < lw_half) { continue; }
+                if (y > h - lw_half) { continue; }
+                if (x < lw_half) { continue; }
+                if (x > w - lw_half) { continue; }
+
+                square_shader(x, y, lw_half, color);
+            }
+        } else {
+
+            for (std::int64_t x = xs; x < xf; ++x) {
+                const auto y = line(x, x_start, x_end, y_start, y_end);
+                // m.canvas.quad_shader(x, y, linewidth, linewidth, color);
+
+                if (y < lw_half) { continue; }
+                if (y > h - lw_half) { continue; }
+                if (x < lw_half) { continue; }
+                if (x > w - lw_half) { continue; }
+                square_shader(x, y, lw_half, color);
+            }
         }
     }
 
-    void draw_axes() {
-        if (m.plot_axes.x) { draw_line(m.x_min, 0_r, m.x_max, 0_r); }
-        if (m.plot_axes.y) { draw_line(0_r, m.y_min, 0_r, m.y_max); }
-        if (m.plot_box.top) { draw_line(m.x_min, m.y_max, m.x_max, m.y_max); }
-        if (m.plot_box.bottom) { draw_line(m.x_min, m.y_min, m.x_max, m.y_min); }
-        if (m.plot_box.left) { draw_line(m.x_min, m.y_min, m.x_min, m.y_max); }
-        if (m.plot_box.right) { draw_line(m.x_max, m.y_min, m.x_max, m.y_max); }
+    void square_shader(std::int64_t x, std::int64_t y, std::int64_t lw_half, RGBColor color) {
+        for (std::int64_t j = -lw_half; j < lw_half; ++j) {
+            auto y_pos = y + j;
+            for (std::int64_t i = -lw_half; i < lw_half; ++i) {
+                const auto x_pos = x - i;
+                m.canvas.pixel_shader_unprotected(x_pos, y_pos, color);
+            }
+        }
+    }
+
+    void draw_axes(std::size_t axes_width) {
+        if (m.plot_axes.x) { draw_line(m.x_min, 0_r, m.x_max, 0_r, axes_width); }
+        if (m.plot_axes.y) { draw_line(0_r, m.y_min, 0_r, m.y_max, axes_width); }
+        if (m.plot_box.top) { draw_line(m.x_min, m.y_max, m.x_max, m.y_max, axes_width); }
+        if (m.plot_box.bottom) { draw_line(m.x_min, m.y_min, m.x_max, m.y_min, axes_width); }
+        if (m.plot_box.left) { draw_line(m.x_min, m.y_min, m.x_min, m.y_max, axes_width); }
+        if (m.plot_box.right) { draw_line(m.x_max, m.y_min, m.x_max, m.y_max, axes_width); }
     }
 
     template <Container XContainer, Container YContainer>

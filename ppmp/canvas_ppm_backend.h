@@ -2,13 +2,11 @@
 #define PPMP_CANVAS_PPM_BACKEND_H
 
 #include "ppmp/data_saver.h"
-#include "ppmp/error.h"
 #include "ppmp/rgb_color.h"
 
 #include <algorithm>
 #include <cstddef>
 #include <cstring>
-#include <expected>
 #include <iostream>
 #include <sstream>
 #include <utility>
@@ -28,11 +26,8 @@ class PPMCanvas {
     explicit PPMCanvas(M&& m_init) : m{std::move(m_init)} {};
 
     constexpr static std::size_t PIXEL_WIDTH = 3;
-    ErrorStashT                  ErrorStash{};
 
 public:
-    using Result = std::expected<void, Error>;
-
     /// \brief Create a blank canvas with the specified width and height and the specified background color.
     [[nodiscard("Discarding a factory function")]]
     static PPMCanvas blank(std::size_t width, std::size_t height, RGBColor background_color) {
@@ -67,16 +62,12 @@ public:
         return PPMCanvas(M{.data = data_bytes, .header_size = header_size, .width = width, .height = height});
     }
 
-    /// \brief Colors a single pixel with a given color.
+    /// \brief Colors a single pixel with a given color. This function DOES NOT perform boundschecks.
     /// \param x x-coordinate of the pixel to color, in canvas coordinates.
     /// \param y y-coordinate of the pixel to color, in canvas coordinates.
-    /// \return  Error::OutOfBounds if the coordinates are out of bounds. This is a non-fatal error.
     ///
     /// Canvas coordinates start at the top left corner and go down and to the right.
-    [[nodiscard("Returned error is being descarded.")]]
-    Result pixel_shader(std::size_t x, std::size_t y, RGBColor color) {
-
-        if (x >= m.width || y >= m.height) { return std::unexpected(Error::OutOfBounds); }
+    void pixel_shader_unprotected(std::size_t x, std::size_t y, RGBColor color) {
 
         const std::size_t i = m.header_size + (y * m.width + x) * PIXEL_WIDTH;
         // Bounds are already checked with the above if statement and i is calculated inside the bounds of the vector.
@@ -85,15 +76,19 @@ public:
         m.data[i + 1] = std::byte{color.G};
         m.data[i + 2] = std::byte{color.B};
         // NOLINTEND
-        return {};
     }
 
     /// \brief Colors a quadrilateral with a given color. Uses a pixel shader to color each pixel in the quad.
     void quad_shader(std::size_t x, std::size_t y, std::size_t quad_width, std::size_t quad_height, RGBColor color) {
 
         for (std::size_t j = 0; j < quad_height; ++j) {
+            auto y_pos = y - quad_height / 2 + j;
+            if (y_pos >= m.height) { continue; }
+
             for (std::size_t i = 0; i < quad_width; ++i) {
-                ErrorStash = pixel_shader(x - quad_width / 2 + i, y - quad_height / 2 + j, color);
+                const auto x_pos = x - quad_width / 2 + i;
+                if (x_pos >= m.width) { continue; }
+                pixel_shader_unprotected(x_pos, y_pos, color);
             }
         }
     }

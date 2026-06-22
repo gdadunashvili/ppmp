@@ -1,4 +1,3 @@
-#include "ppmp/error.h"
 #include "ppmp/figure.h"
 #include "ppmp/rgb_color.h"
 
@@ -70,8 +69,6 @@ int main() {
     fig.plot(xs, PlotParams{.brush_width = 3, .brush_color{NAMED_COLORS.orange}, .plot_type = ppmp::PlotType::Line});
 
     fig.save_canvas("example");
-
-    ppmp::print_error_stack(ppmp::ErrorData::get_errors());
 
     std::cout << "Done." << std::endl;
 
