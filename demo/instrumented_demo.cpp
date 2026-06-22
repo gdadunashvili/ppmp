@@ -30,19 +30,18 @@ int main() {
 
     auto setup_timer = gdu::Timer::start();
 
-    auto fig = PPMFigure::create_proportional(scale,
-                                              PPMFigure::KWArgs{.color = {},
-                                                                .x_min = -2_r * std::numbers::pi_v<Real>,
-                                                                .x_max = 2_r * std::numbers::pi_v<Real>,
-                                                                .y_min = {},
-                                                                .y_max = {}});
-
-    std::size_t points = 110;
-    auto        xs     = linspace(0_r, .99_r, points);
-    auto        xsb    = linspace(.99_r, 0_r, points);
-    auto        mxs    = linspace(0_r, -.99_r, points);
-
+    auto fig        = PPMFigure::create_proportional(scale,
+                                                     PPMFigure::KWArgs{.color = NAMED_COLORS.white,
+                                                                       .x_min = -2_r * std::numbers::pi_v<Real>,
+                                                                       .x_max = 2_r * std::numbers::pi_v<Real>,
+                                                                       .y_min = -2,
+                                                                       .y_max = 2});
     auto setup_time = setup_timer.time_elapsed();
+
+    const std::size_t points = 110;
+    auto              xs     = linspace(0_r, .99_r, points);
+    auto              xsb    = linspace(.99_r, 0_r, points);
+    auto              mxs    = linspace(0_r, -.99_r, points);
 
     auto plotting_math_timer = gdu::Timer::start();
 
@@ -66,12 +65,25 @@ int main() {
     };
 
     fig.plot(sin_x, 100, PlotParams{.brush_width = 14, .brush_color{}, .plot_type = ppmp::PlotType::Bar});
-    fig.plot([](Real x) { return x * x * x / 4_r; },
-             201,
-             PlotParams{.brush_width = 10, .brush_color{}, .plot_type = ppmp::PlotType::Line});
+    for (std::int32_t i = -100; i < 100; ++i) {
+        Real a = static_cast<Real>(4 * i + 1);
+        fig.plot([a](Real x) { return x * x * x / a; },
+                 201,
+                 PlotParams{.brush_width = 10, .brush_color{}, .plot_type = ppmp::PlotType::Line});
+    }
 
     fig.parametric_plot(
-        cos_sx, sin_sx, 101, PlotParams{.brush_width = 40, .brush_color{}, .plot_type = ppmp::PlotType::Line});
+        cos_sx, sin_sx, 1001, PlotParams{.brush_width = 240, .brush_color{}, .plot_type = ppmp::PlotType::Line});
+    fig.parametric_plot(
+        cos_sx, sin_sx, 1001, PlotParams{.brush_width = 140, .brush_color{}, .plot_type = ppmp::PlotType::Line});
+    fig.parametric_plot(
+        cos_sx, sin_sx, 1001, PlotParams{.brush_width = 70, .brush_color{}, .plot_type = ppmp::PlotType::Line});
+    fig.parametric_plot(
+        cos_sx, sin_sx, 1001, PlotParams{.brush_width = 40, .brush_color{}, .plot_type = ppmp::PlotType::Line});
+    fig.parametric_plot(
+        cos_sx, sin_sx, 1001, PlotParams{.brush_width = 20, .brush_color{}, .plot_type = ppmp::PlotType::Line});
+    fig.parametric_plot(
+        cos_sx, sin_sx, 1001, PlotParams{.brush_width = 10, .brush_color{}, .plot_type = ppmp::PlotType::Line});
 
     auto plotting_math_time = plotting_math_timer.time_elapsed();
     std::cout << "Time elapsed for setup: " << gdu::Timer::human_readable_time(setup_time) << std::endl;
