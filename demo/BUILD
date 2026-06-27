@@ -32,6 +32,6 @@ cc_binary(
 
 filegroup(
     name = "example_ppm",
-    srcs = ["example.ppm"],
+    srcs = ["golden_example.ppm"],
     visibility = ["//visibility:public"],
 )
