@@ -171,3 +171,5 @@ bazel run //:coverage
 
 ### Known Bugs:
 - lots of out of bounds writes are attempted (not an error but wasted work)
+- direct scaling of dimensions will blow things out of proportion for dimensions with large units
+    - ask for long edge pixel count and scale the short edge proportionally
