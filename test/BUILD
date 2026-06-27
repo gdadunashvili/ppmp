@@ -29,16 +29,24 @@ clang_tidy_test(
     srcs = ["//ppmp:figure"],
 )
 
+genrule(
+    name = "generate_demo_output",
+    srcs = ["//demo:demo"],
+    outs = ["example.ppm"],
+    cmd = "$(locations //demo:demo) && cp example.ppm $@",
+    tools = ["//demo:demo"],
+)
+
 py_test(
     name = "integration_test",
     srcs = ["integration_test.py"],
     args = [
-        "$(location //demo:demo)",
+        "$(location :generate_demo_output)",
         "$(location //demo:example_ppm)",
     ],
     tags = ["integration"],
     data = [
-        "//demo",
+        ":generate_demo_output",
         "//demo:example_ppm",
     ],
 )
